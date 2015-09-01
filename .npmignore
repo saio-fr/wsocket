@@ -1,0 +1,12 @@
+.git/
+node_modules/
+**/node_modules/
+
+.gitignore
+.eslintignore
+.eslintrc
+.jscsrc
+.npm-debug.log
+**/.npm-debug.log
+.DS_Store
+**/.DS_Store

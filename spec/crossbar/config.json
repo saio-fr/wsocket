@@ -1,0 +1,115 @@
+{
+	"controller": {
+	},
+	"workers": [
+		{
+			"type": "router",
+			"options": {},
+			"realms": [
+				{
+					"name": "test",
+					"roles": [
+						{
+							"name": "anonymous",
+							"permissions": [
+								{
+									"uri": "public.*",
+									"publish": true,
+									"subscribe": true,
+									"call": true,
+									"register": true
+								},
+								{
+									"uri": "protected.*",
+									"publish": true,
+									"subscribe": false,
+									"call": true,
+									"register": false
+								},
+								{
+									"uri": "private.*",
+									"publish": false,
+									"subscribe": false,
+									"call": false,
+									"register": false
+								}
+							]
+						},
+						{
+							"name": "auth",
+							"permissions": [
+								{
+									"uri": "*",
+									"publish": true,
+									"subscribe": true,
+									"call": true,
+									"register": true
+								}
+							]
+						}
+					]
+				}
+			],
+			"transports": [
+				{
+					"type": "websocket",
+					"endpoint": {
+						"type": "tcp",
+						"port": 8080
+					},
+					"options": {
+						"echo_close_codereason": true,
+						"open_handshake_timeout": 5000,
+						"close_handshake_timeout": 1000,
+						"auto_ping_interval": 10000,
+						"auto_ping_timeout": 5000,
+						"auto_ping_size": 4
+					},
+					"auth": {
+						"anonymous": {
+							"role": "anonymous"
+						},
+						"wampcra": {
+							"type": "static",
+							"users": {
+								"auth": {
+									"secret": "auth",
+									"role": "auth"
+								}
+							}
+						}
+					}
+				},
+				{
+					"type": "websocket",
+					"endpoint": {
+						"type": "tcp",
+						"port": 8081
+					},
+					"options": {
+						"echo_close_codereason": true,
+						"open_handshake_timeout": 5000,
+						"close_handshake_timeout": 1000,
+						"auto_ping_interval": 10000,
+						"auto_ping_timeout": 5000,
+						"auto_ping_size": 4
+					},
+					"auth": {
+						"anonymous": {
+							"role": "anonymous"
+						},
+						"wampcra": {
+							"type": "static",
+							"users": {
+								"auth": {
+									"secret": "auth",
+									"role": "auth"
+								}
+							}
+						}
+					}
+				}
+			]
+		}
+	]
+}

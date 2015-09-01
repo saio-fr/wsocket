@@ -1,0 +1,33 @@
+{
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true,
+
+    // @AT TODO remove that when we'll have all tests in tap
+    "jasmine": true
+  },
+  "globals": {
+    "__DEV__": true,
+    "__SERVER__": true
+  },
+
+  "rules": {
+    // Strict mode
+    "indent": [2, 2],
+    "strict": [2, "never"],
+
+    // Code style
+    "quotes": [2, "single"],
+
+    // @AT use for private stuff
+    "no-underscore-dangle": 0,
+
+    // @AT process.exit need for graceful shutdown (after unhandled exception for example)
+    "no-process-exit": 0,
+
+    // @AT inconsistent returns (ie functions that return something or undefined)
+    // used in function that look for something and return undefined if nothing has been found
+    "consistent-return": 0
+  }
+}

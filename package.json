@@ -1,0 +1,35 @@
+{
+  "name": "@saio/wsocket",
+  "version": "0.1.0",
+  "description": "Autobahn.ws abstraction, extension & promisification lib for Node.js and browsers.",
+  "main": "./src/main.js",
+  "dependencies": {
+    "when": ">= 2.8.0",
+    "autobahn": "*",
+    "underscore": "*"
+  },
+  "devDependencies": {
+    "eslint": "~1.3",
+    "jscs": "*",
+    "jasmine": "~2.3",
+    "karma": "~0.12",
+    "browserify": "*",
+    "karma-browserify": "*",
+    "karma-chrome-launcher": "*",
+    "karma-firefox-launcher": "*",
+    "jasmine-core": "~2.3",
+    "karma-jasmine": "~0.3"
+  },
+  "scripts": {
+    "test": "eslint . && jscs . && bash tasks/test.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:saio-fr/lib.git"
+  },
+  "author": "Alexis Terrat",
+  "bugs": {
+    "url": "https://github.com/saio-fr/lib/issues"
+  },
+  "homepage": "https://github.com/saio-fr/lib"
+}

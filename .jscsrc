@@ -1,0 +1,24 @@
+{
+  "preset": "airbnb",
+  "disallowSpacesInAnonymousFunctionExpression": null,
+  "validateLineBreaks": "LF",
+  "validateIndentation": 2,
+
+  // @AT default _this
+  "safeContextKeyword": "that",
+
+  // @AT default true, confict with promises
+  "requirePaddingNewLinesAfterBlocks": null,
+
+  // @AT default true, rule full of shit
+  "requireTrailingComma": null,
+
+  // @AT remove .json parsing because of an undefined rule error
+  "fileExtensions": [".js"],
+  "maxErrors": 10,
+  "excludeFiles": [
+    ".git/**",
+    "node_modules/**",
+    "tasks/**"
+  ]
+}
