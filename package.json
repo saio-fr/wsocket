@@ -10,7 +10,6 @@
   },
   "devDependencies": {
     "eslint": "~1.3",
-    "jscs": "*",
     "jasmine": "~2.3",
     "karma": "~0.12",
     "browserify": "*",
@@ -21,7 +20,7 @@
     "karma-jasmine": "~0.3"
   },
   "scripts": {
-    "test": "eslint . && jscs ."
+    "test": "eslint ."
   },
   "repository": {
     "type": "git",
