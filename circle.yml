@@ -1,0 +1,25 @@
+# Initialize node env
+machine:
+  node:
+    version: 0.12.0
+  services:
+    - docker
+# Install npm
+dependencies:
+  override:
+    - echo $NPM_TOKEN > ~/.npmrc
+    - npm install
+    # start crossbar container
+    - bash ./tasks/crossbar/start.sh
+# Run tests
+test:
+  override:
+    - npm test
+    # integration test with crossbar
+    - bash ./tasks/test.sh
+
+deployment:
+  npm:
+    branch: master
+    commands:
+      - npm publish

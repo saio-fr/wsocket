@@ -21,7 +21,7 @@
     "karma-jasmine": "~0.3"
   },
   "scripts": {
-    "test": "eslint . && jscs . && bash tasks/test.sh"
+    "test": "eslint . && jscs ."
   },
   "repository": {
     "type": "git",
