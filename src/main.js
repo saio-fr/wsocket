@@ -401,8 +401,8 @@ WSocket.prototype._adaptHandler = function(namespace, handlerType, callback, mat
         regexpStr += '.*';
       }
     }
-    var wildcardFinder = new RegExp(regexpStr, 'g');
     return function(args, kwargs, details) {
+      var wildcardFinder = new RegExp(regexpStr, 'g');
       var wildcards = wildcardFinder.exec(details[handlerType]);
       if (wildcards !== null) {
         // a global regexp success exec always returns the complete string in result[0]
