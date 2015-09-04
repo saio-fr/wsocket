@@ -1,6 +1,6 @@
 {
   "name": "@saio/wsocket",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Autobahn.ws abstraction, extension & promisification lib for Node.js and browsers.",
   "main": "./src/main.js",
   "dependencies": {
