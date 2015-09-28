@@ -511,4 +511,66 @@ describe('WSocket, with real crossbar server,', function() {
 
     setTimeout(close, 6000);
   }, 100000);
+
+  it('should pass right error to caller when callee throws', function(done) {
+    var callConn = new WSocket('ws://127.0.0.1:8080', 'test');
+    var regConn = new WSocket('ws://127.0.0.1:8081', 'test');
+
+    var errMessageRecv = '';
+
+    var procedure = function() {
+      throw new Error('custom error message');
+    };
+
+    when.all([callConn.open(), regConn.open()])
+      .then(function() {
+        return regConn.register('public.test', procedure);
+      }).then(function() {
+        return callConn.call('public.test');
+      }).catch(function(err) {
+        errMessageRecv = err.message;
+        return when.resolve();
+      }).then(function() {
+        return regConn.unregister();
+      }).then(function() {
+        return when.all([callConn.close(), regConn.close()]);
+      }).then(function() {
+        expect(errMessageRecv).toEqual('custom error message');
+        done();
+      }).catch(function(err) {
+        console.log(err);
+        done.fail();
+      });
+  }, 100000);
+
+  it('should pass right error to caller when callee rejects', function(done) {
+    var callConn = new WSocket('ws://127.0.0.1:8080', 'test');
+    var regConn = new WSocket('ws://127.0.0.1:8081', 'test');
+
+    var errMessageRecv = '';
+
+    var procedure = function() {
+      return when.reject(new Error('custom error message'));
+    };
+
+    when.all([callConn.open(), regConn.open()])
+      .then(function() {
+        return regConn.register('public.test', procedure);
+      }).then(function() {
+        return callConn.call('public.test');
+      }).catch(function(err) {
+        errMessageRecv = err.message;
+        return when.resolve();
+      }).then(function() {
+        return regConn.unregister();
+      }).then(function() {
+        return when.all([callConn.close(), regConn.close()]);
+      }).then(function() {
+        expect(errMessageRecv).toEqual('custom error message');
+        done();
+      }).catch(function(err) {
+        console.log(err);
+        done.fail();
+      });
+  }, 100000);
 });

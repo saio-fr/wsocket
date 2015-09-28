@@ -248,6 +248,7 @@ WSocket.prototype.register = function(namespace, procedure, options) {
     .then(function() {
       var match = options && options.match ? options.match : 'exact';
       var adaptedProcedure = that._adaptHandler(namespace, 'procedure', procedure, match);
+      adaptedProcedure = that._formatProcedureThrow(adaptedProcedure);
       var regAction = that._session.register.bind(
         that._session, namespace, adaptedProcedure, options
       );
@@ -342,19 +343,16 @@ WSocket.prototype._whenConnected = function() {
 // we suppose that action returns a promise, can throw and is a function binded to its args
 WSocket.prototype._try = function(action) {
   var that = this;
-  return when.promise(function(resolve, reject) {
-    when.try(action)
-      .then(resolve, function(err) {
-        reject(that._formatError(err));
-      });
-  });
+  return when.try(action)
+    .catch(function(err) {
+      return when.reject(that._formatError(err));
+    });
 };
 
 WSocket.prototype._formatError = function(err) {
   var outErr;
   if (err instanceof autobahn.Error) {
-    outErr = new Error(err.args[0]);
-    outErr.type = err.error;
+    outErr = new Error(err.args[0][0].error);
     outErr.wamp = true;
     return outErr;
   }
@@ -369,6 +367,16 @@ WSocket.prototype._formatError = function(err) {
   outErr = new Error(err);
   outErr.type = 'internal';
   return outErr;
+};
+
+// return an adapted procedure that if throws or rejects, it will with an autobahn error
+WSocket.prototype._formatProcedureThrow = function(procedure) {
+  return function(args, kwargs, details) {
+    return when.try(procedure, args, kwargs, details)
+      .catch(function(err) {
+        return when.reject([new autobahn.Error(err.message)]);
+      });
+  };
 };
 
 WSocket.prototype._adaptHandler = function(namespace, handlerType, callback, match) {
