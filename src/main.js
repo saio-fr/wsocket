@@ -304,8 +304,8 @@ WSocket.prototype._whenConnected = function() {
     var err;
     switch (that.state) {
     case 'new':
-      err = new Error('connection new, call open() first');
-      err.type = 'new';
+      err = new Error('connection new');
+      err.type = 'state';
       reject(err);
       return;
 
@@ -315,13 +315,13 @@ WSocket.prototype._whenConnected = function() {
 
     case 'closing':
       err = new Error('connection closing');
-      err.type = 'close';
+      err.type = 'state';
       reject(err);
       return;
 
     case 'close':
       err = new Error('connection closed');
-      err.type = 'close';
+      err.type = 'state';
       reject(err);
       return;
 
@@ -335,7 +335,7 @@ WSocket.prototype._whenConnected = function() {
       onclose = function() {
         that.removeListener('open', onopen);
         err = new Error('connection closed');
-        err.type = 'close';
+        err.type = 'state';
         reject(err);
       };
 

@@ -9,14 +9,12 @@ dependencies:
   override:
     - echo $NPM_TOKEN > ~/.npmrc
     - npm install
-    # start crossbar container
-    - bash ./tasks/crossbar/start.sh
 # Run tests
 test:
   override:
     - npm test
     # integration test with crossbar
-    - bash ./tasks/test.sh
+    - npm run test.integration
 
 deployment:
   npm:

@@ -1,4 +1,4 @@
-libWSocket - API Reference
+wsocket - API Reference
 ================================
 
 Constructor :
@@ -36,10 +36,12 @@ Methods :
    `resolve ()`  
    `reject ( err )` where `err : Error`  
 
-   * `{ type : "state", message : "can't open, socket state : [state] != 'new'" }`  
-   * `{ type : "internal", message : [it depends...] }` : should never happen  
-   * `{ type : [close.reason], message : [close.message] }` : see doc about close event below (far far away)  
-   RQ : if the realm name is wrong, the thrown error may have the type 'timeout' instead of 'wamp.error.no_such_realm' in some browsers  
+   * `{ type: "state", message: "can't open, socket state : [state] != 'new'" }`  
+   * `{ type: "internal", message: [it depends...] }` : should never happen  
+   * `{ type: "transport", message: "protocol unsupported" || "connection timeout" }`
+   * `{ type: "wamp", message: [wamp close message] || "app close", url: [wamp close reason url] }` :  
+   see doc about close event below (far far away)  
+   RQ : if the realm name is wrong, the thrown error may have the message 'connection timeout' instead of 'wamp.error.no_such_realm' in some browsers  
 
 ---
 
@@ -50,8 +52,8 @@ Methods :
    `resolve ()`  
    `reject ( err )` where `err : Error`  
 
-   * `{ type : "state", message : "can't close, socket state : [state]" }`  
-   * `{ type : "internal", message : [it depends...] }` : should never happen  
+   * `{ type: "state", message: "can't close, socket state : [state]" }`  
+   * `{ type: "internal", message: [it depends...] }` : should never happen  
 
 ---
 
@@ -68,9 +70,10 @@ Methods :
    `resolve ()`  
    `reject ( err )` where `err : Error`  
 
-   * `{ type : "internal", message : [it depends...] }` : should never happen  
-   * `{ type : [wamp error URI], message : [wamp error message], wamp : true }`  
-   see [wamp exceptions doc](http://autobahn.ws/python/reference/autobahn.wamp.html#module-autobahn.wamp.exception) for a complete list (i hope) of wamp error URIs
+   * `{ type: "internal", message: [it depends...] }` : should never happen  
+   * `{ type: "state", message: "connection new || closing || closed" }`  
+   * `{ type: "wamp", message: [wamp error message], url: [wamp error url] }`  
+   see [wamp exceptions doc](http://autobahn.ws/python/reference/autobahn.wamp.html#module-autobahn.wamp.exception) for a complete list (i hope) of wamp error URLs & messages.  
 
 ---
 
@@ -98,10 +101,7 @@ Methods :
  * Returns : `Promise`  
 
    `resolve ()`  
-   `reject ( err )` where `err : Error`  
-
-   * `{ type : "internal", message : [it depends...] }` : should never happen  
-   * `{ type : [wamp error URI], message : [wamp error message], wamp : true }`
+   `reject ( err )` where `err : Error` (see publish errors)
 
 ---
 
@@ -115,10 +115,7 @@ Methods :
  * Returns : `Promise`  
 
    `resolve ()`  
-   `reject ( err )` where `err : Error`  
-
-   * `{ type : "internal", message : [it depends...] }` : should never happen  
-   * `{ type : [wamp error URI], message : [wamp error message], wamp : true }`
+   `reject ( err )` where `err : Error` (see publish errors)
 
 ---
 
@@ -132,11 +129,10 @@ Methods :
 
  * Returns : `Promise`  
 
-   `resolve ( result )`, where result type is application-specific
-   `reject ( err )` where `err : Error`  
-
-   * `{ type : "internal", message : [it depends...] }` : should never happen  
-   * `{ type : [wamp error URI], message : [wamp error message], wamp : true }`
+   `resolve ( result )`, where result type is application-specific  
+   `reject ( err )` where `err : Error` (see publish errors)  
+      RQ: if err is a wamp error with url "wamp.error.runtime_error",
+      the message is the one thrown by the remote procedure.
 
 ---
 
@@ -154,10 +150,7 @@ Methods :
  * Returns : `Promise`  
 
    `resolve ()`  
-   `reject ( err )` where `err : Error`  
-
-   * `{ type : "internal", message : [it depends...] }` : should never happen  
-   * `{ type : [wamp error URI], message : [wamp error message], wamp : true }`
+   `reject ( err )` where `err : Error` (see publish errors)
 
 ---
 
@@ -171,29 +164,24 @@ Methods :
  * Returns : `Promise`  
 
    `resolve ()`  
-   `reject ( err )` where `err : Error`  
-
-   * `{ type : "internal", message : [it depends...] }` : should never happen  
-   * `{ type : [wamp error URI], message : [wamp error message], wamp : true }`
+   `reject ( err )` where `err : Error` (see publish errors)
 
 Events :
 --------
 WSocket inherits from Events.EventEmitter from node.js. So event listener signature must be : `function([, args])` (i.e. event uri not forwarded, just event args in that order).
 
- * `"open"` :  
-  `undefined`  
+ * `"open"` : `undefined`  
 
 ---
 
- * `"reconnecting"` :  
-  `undefined`  
+ * `"reconnecting"` : `undefined`  
 
 ---
 
  * `"close"` :  
-  `level : "transport" || "application" || "unknown"`,
-  `reason : String "unsupported" || "unreachable" || "timeout"` if transport level, else wamp uri.
-  `message : String`, just for the computer's reading pleasure.  
+  - `message : String`, just for the computer's reading pleasure.  
+  - `type : "transport" || "wamp"`,  
+  - `url : [wamp url]` def only if type is "wamp".  
 
 Running the tests :
 -------------------
@@ -201,5 +189,7 @@ You need docker.
 After a local install (with devDependencies):
 
 ```bash
-$ npm test
+$ npm test # only run linting tests
+$ npm run test.integration # unit test with a dockerized crossbar server
+$ npm run test.integration.clean
 ```

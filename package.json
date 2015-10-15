@@ -1,6 +1,6 @@
 {
   "name": "@saio/wsocket",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Autobahn.ws abstraction, extension & promisification lib for Node.js and browsers.",
   "main": "./src/main.js",
   "dependencies": {
@@ -10,6 +10,7 @@
   },
   "devDependencies": {
     "eslint": "~1.3",
+    "jscs": "*",
     "jasmine": "~2.3",
     "karma": "~0.12",
     "browserify": "*",
@@ -20,7 +21,9 @@
     "karma-jasmine": "~0.3"
   },
   "scripts": {
-    "test": "eslint ."
+    "test": "eslint . && jscs .",
+    "test.integration": "bash ./tasks/crossbar/start.sh && bash ./tasks/test.sh",
+    "test.integration.clean": "bash ./tasks/crossbar/stop.sh"
   },
   "repository": {
     "type": "git",
