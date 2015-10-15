@@ -35,7 +35,8 @@ describe('WSocket, with real crossbar server,', function() {
       }).then(function() {
         done();
       }, function(err) {
-        expect(err.type).toEqual('unreachable');
+        expect(err.type).toEqual('transport');
+        expect(err.message).toEqual('connection timeout');
         expect(conn.state).toEqual('close');
         done();
       });
@@ -59,8 +60,12 @@ describe('WSocket, with real crossbar server,', function() {
       }).then(function() {
         done();
       }, function(err) {
-        // autobahn fail in browser: err.type is 'timeout' instead of 'wamp.error.no_such_realm'
-        expect(err.type === 'wamp.error.no_such_realm' || err.type === 'timeout').toBe(true);
+        // autobahn fail in browser: err.type is 'transport' & err.msg 'reconnection timeout'
+        expect(err.type === 'wamp' &&
+          err.url === 'wamp.error.no_such_realm' ||
+          err.type === 'transport' &&
+          err.message === 'reconnection timeout'
+        ).toBe(true);
         expect(conn.state).toEqual('close');
         done();
       });
@@ -344,6 +349,10 @@ describe('WSocket, with real crossbar server,', function() {
   it('should fail to pub/sub/call/reg on restricted namespaces if not auth', function(done) {
 
     var conn = new WSocket('ws://127.0.0.1:8080', 'test');
+    var serviceConn = new WSocket('ws://127.0.0.1:8081', 'test', {
+      authId: 'auth',
+      password: 'auth'
+    });
 
     var pubFail = false;
     var subFail = false;
@@ -360,23 +369,37 @@ describe('WSocket, with real crossbar server,', function() {
 
     conn.open()
       .then(function() {
-        conn.publish('private.test')
-          .then(function() {}, function() {
+        return serviceConn.open()
+        .then(function() {
+          return serviceConn.register('private.test.call', procedure);
+        });
+      })
+      .then(function() {
+        conn.publish('private.test.pub')
+          .catch(function(err) {
+            expect(err.url).toEqual('wamp.error.not_authorized');
+            expect(err.type).toEqual('wamp');
             pubFail = true;
           });
 
-        conn.subscribe('private.test', onevent)
-          .catch(function() {
+        conn.subscribe('private.test.sub', onevent)
+          .catch(function(err) {
+            expect(err.url).toEqual('wamp.error.not_authorized');
+            expect(err.type).toEqual('wamp');
             subFail = true;
           });
 
-        conn.call('private.test', [1, 1])
-          .catch(function() {
+        conn.call('private.test.call', [1, 1])
+          .catch(function(err) {
+            expect(err.url).toEqual('wamp.error.not_authorized');
+            expect(err.type).toEqual('wamp');
             callFail = true;
           });
 
-        conn.register('private.test', procedure)
-          .catch(function() {
+        conn.register('private.test.reg', procedure)
+          .catch(function(err) {
+            expect(err.url).toEqual('wamp.error.not_authorized');
+            expect(err.type).toEqual('wamp');
             regFail = true;
           });
       });
@@ -517,6 +540,8 @@ describe('WSocket, with real crossbar server,', function() {
     var regConn = new WSocket('ws://127.0.0.1:8081', 'test');
 
     var errMessageRecv = '';
+    var errUrl = '';
+    var errType = '';
 
     var procedure = function() {
       throw new Error('custom error message');
@@ -529,6 +554,8 @@ describe('WSocket, with real crossbar server,', function() {
         return callConn.call('public.test');
       }).catch(function(err) {
         errMessageRecv = err.message;
+        errUrl = err.url;
+        errType = err.type;
         return when.resolve();
       }).then(function() {
         return regConn.unregister();
@@ -536,6 +563,8 @@ describe('WSocket, with real crossbar server,', function() {
         return when.all([callConn.close(), regConn.close()]);
       }).then(function() {
         expect(errMessageRecv).toEqual('custom error message');
+        expect(errUrl).toEqual('wamp.error.runtime_error');
+        expect(errType).toEqual('wamp');
         done();
       }).catch(function(err) {
         console.log(err);
@@ -548,6 +577,8 @@ describe('WSocket, with real crossbar server,', function() {
     var regConn = new WSocket('ws://127.0.0.1:8081', 'test');
 
     var errMessageRecv = '';
+    var errUrl = '';
+    var errType = '';
 
     var procedure = function() {
       return when.reject(new Error('custom error message'));
@@ -560,6 +591,8 @@ describe('WSocket, with real crossbar server,', function() {
         return callConn.call('public.test');
       }).catch(function(err) {
         errMessageRecv = err.message;
+        errUrl = err.url;
+        errType = err.type;
         return when.resolve();
       }).then(function() {
         return regConn.unregister();
@@ -567,6 +600,8 @@ describe('WSocket, with real crossbar server,', function() {
         return when.all([callConn.close(), regConn.close()]);
       }).then(function() {
         expect(errMessageRecv).toEqual('custom error message');
+        expect(errUrl).toEqual('wamp.error.runtime_error');
+        expect(errType).toEqual('wamp');
         done();
       }).catch(function(err) {
         console.log(err);

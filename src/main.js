@@ -69,13 +69,16 @@ var WSocket = function(url, realm, options) {
     that.role = undefined;
     that.state = 'close';
 
+    // emits ('close', message, type, wampURI) or ('reconnecting')
     switch(reason){
     case 'unsupported':
-      that.emit('close', 'transport', 'unsupported', 'transport protocol unsupported');
+      that.emit('close', 'protocol unsupported', 'transport');
       break;
 
     case 'unreachable':
-      that.emit('close', 'transport', 'unreachable', 'remote server is unreachable');
+      if (!details.will_retry) {
+        that.emit('close', 'connection timeout', 'transport');
+      }
       break;
 
     case 'lost':
@@ -83,16 +86,17 @@ var WSocket = function(url, realm, options) {
         that.state = 'reconnecting';
         that.emit('reconnecting');
       } else {
-        that.emit('close', 'transport', 'timeout', 'reconnection failed');
+        that.emit('close', 'connection timeout', 'transport');
       }
       break;
 
     case 'closed':
-      that.emit('close', 'application', details.reason, details.message);
+      var message = !!details.message && !!details.message.length ? details.message : 'app close';
+      that.emit('close', message, 'wamp', details.reason);
       break;
 
     default:
-      that.emit('close', 'unknown', reason, 'unknown');
+      that.emit('close', reason, 'transport');
     }
   };
 };
@@ -117,10 +121,13 @@ WSocket.prototype.open = function() {
       resolve();
     };
 
-    onfailure = function(lvl, reason, message) {
+    onfailure = function(message, type, url) {
       that.removeListener('open', onsuccess);
       err = new Error(message);
-      err.type = reason;
+      err.type = type;
+      if (type === 'wamp') {
+        err.url = url;
+      }
       reject(err);
     };
 
@@ -352,8 +359,9 @@ WSocket.prototype._try = function(action) {
 WSocket.prototype._formatError = function(err) {
   var outErr;
   if (err instanceof autobahn.Error) {
-    outErr = new Error(err.args[0][0].error);
-    outErr.wamp = true;
+    outErr = new Error(err.args[0]);
+    outErr.type = 'wamp';
+    outErr.url = err.error;
     return outErr;
   }
   if (err instanceof Error) {
@@ -374,7 +382,7 @@ WSocket.prototype._formatProcedureThrow = function(procedure) {
   return function(args, kwargs, details) {
     return when.try(procedure, args, kwargs, details)
       .catch(function(err) {
-        return when.reject([new autobahn.Error(err.message)]);
+        return when.reject(err.message);
       });
   };
 };
